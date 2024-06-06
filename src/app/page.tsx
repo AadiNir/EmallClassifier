@@ -9,12 +9,14 @@ export default function Home() {
   const clientId = "279123070487-9ndn9g3m26p7lfu94655ifmnn8e7p141.apps.googleusercontent.com";
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [apikey,setapikey]=useState(""); 
+
   useEffect(() => {
     const token = localStorage.getItem("oauth-token");
     if (token) {
       setIsLoggedIn(true);
     }
   }, []);
+
   useEffect(()=>{
     if(isLoggedIn && localStorage.getItem("openaikey")){
       router.push('/emailclass')
@@ -46,7 +48,6 @@ export default function Home() {
                 console.log("Login Failed");
               }}
             />
-        
             </>
           ) : (
             <button onClick={handleLogout}>Logging out</button>
