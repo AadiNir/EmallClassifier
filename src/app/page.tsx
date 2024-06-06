@@ -25,7 +25,7 @@ export default function Home() {
     }
   },[isLoggedIn,apikey])
 
-  const handleLoginSuccess = credentialResponse => {
+  const handleLoginSuccess = (credentialResponse:any) => {
     localStorage.setItem("oauth-token", credentialResponse.credential);
     setIsLoggedIn(true);
   };
