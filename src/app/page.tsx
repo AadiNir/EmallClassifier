@@ -39,6 +39,7 @@ export default function Home() {
     <div>
       <GoogleOAuthProvider clientId={clientId}>
         <div>
+          <h1>hola</h1>
           <h1>My Application</h1>
           {!isLoggedIn ? (
             <>
