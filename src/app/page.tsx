@@ -4,23 +4,34 @@ import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { permanentRedirect, useRouter } from 'next/navigation'
 
 import axios from 'axios'
+import { comma } from "postcss/lib/list";
 export default function Home() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [apikey,setapikey]=useState(""); 
-
   useEffect(() => {
-    let code = window.location.href;
-    let url = new URL(code);
-    let queryParams = url.searchParams.get('code') // This removes the leading "?"
-    if(queryParams) {
-      localStorage.setItem("oauth-token", queryParams);
-      setIsLoggedIn(true);
-    }else{
-      localStorage.removeItem('oauth-token')
-    }
-
-  }, []);
+    const fetchData = async () => {
+      let code = window.location.href;
+      let url = new URL(code);
+      let queryParams = url.searchParams.get('code'); // This removes the leading "?"
+      if (queryParams) {
+        try {
+          const resp = await axios.get(`http://localhost:3000/api/v1/emailclassifier/newoauthcallbacknew?code=${queryParams}`);
+          localStorage.setItem('username',resp.data.name)
+          localStorage.setItem('userpic',resp.data.picture)
+          setIsLoggedIn(true);
+        } catch (error) {
+          // Handle error if request fails
+          console.log('error mf')
+          console.error('Error fetching data:', error);
+        }
+      } else {
+      }
+    };
+  
+    fetchData();
+  }, []); // Empty dependency array means this effect runs only once, after the initial render
+  
 
   useEffect(()=>{
 
