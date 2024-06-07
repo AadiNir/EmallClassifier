@@ -28,6 +28,7 @@ export default function Home() {
   const handleLoginSuccess = (credentialResponse:any) => {
     localStorage.setItem("oauth-token", credentialResponse.credential);
     setIsLoggedIn(true);
+    console.log(credentialResponse)
   };
 
   const handleLogout = () => {
