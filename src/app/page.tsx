@@ -1,23 +1,29 @@
 "use client"
 import { useEffect, useState } from "react";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import { useRouter } from 'next/navigation'
+import { permanentRedirect, useRouter } from 'next/navigation'
 
-
+import axios from 'axios'
 export default function Home() {
   const router = useRouter();
-  const clientId = "279123070487-9ndn9g3m26p7lfu94655ifmnn8e7p141.apps.googleusercontent.com";
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [apikey,setapikey]=useState(""); 
 
   useEffect(() => {
-    const token = localStorage.getItem("oauth-token");
-    if (token) {
+    let code = window.location.href;
+    let url = new URL(code);
+    let queryParams = url.searchParams.get('code') // This removes the leading "?"
+    if(queryParams) {
+      localStorage.setItem("oauth-token", queryParams);
       setIsLoggedIn(true);
+    }else{
+      localStorage.removeItem('oauth-token')
     }
+
   }, []);
 
   useEffect(()=>{
+
     if(isLoggedIn && localStorage.getItem("openaikey")){
       router.push('/emailclass')
     }else{
@@ -25,37 +31,23 @@ export default function Home() {
     }
   },[isLoggedIn,apikey])
 
-  const handleLoginSuccess = (credentialResponse:any) => {
-    localStorage.setItem("oauth-token", credentialResponse.credential);
-    setIsLoggedIn(true);
-    console.log(credentialResponse)
-  };
+  // const handleLoginSuccess = (credentialResponse:any) => {
+  //   setIsLoggedIn(true);
+  //   console.log(credentialResponse)
+  // };
 
-  const handleLogout = () => {
-    localStorage.removeItem("oauth-token");
-    setIsLoggedIn(false);
-  };
+  const googleauth= async()=>{
+    const response = await axios.get('http://localhost:3000/api/v1/emailclassifier/getemails');
+    window.location.assign(response.data);
+
+  }
 
   return (
     <div>
-      <GoogleOAuthProvider clientId={clientId}>
-        <div>
-          <h1>hola</h1>
-          <h1>My Application</h1>
-          {!isLoggedIn ? (
-            <>
-            <GoogleLogin
-              onSuccess={handleLoginSuccess}
-              onError={() => {
-                console.log("Login Failed");
-              }}
-            />
-            </>
-          ) : (
-            <button onClick={handleLogout}>Logging out</button>
-          )}
-        </div>
-      </GoogleOAuthProvider>
+    {!isLoggedIn ? (
+  <button onClick={googleauth}>Login with your Google account</button>
+) : <h1>Logged in successfully</h1>}
+
       <input className="text-slate-950" placeholder="enter openAi Api key" onChange={(e)=>{setapikey(e.target.value)}} required/>
         <button onClick={()=>{localStorage.setItem("openaikey",apikey); setapikey("")}}>Enter</button>
    </div>
