@@ -3,6 +3,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 
 export default function Emailclass() {
+    const openaiapikey = "sk-proj-3r81ZdvUAcOnNVJYDW9tT3BlbkFJMlpcUhgxOxD1BX2Mnojp"
     const[count,setcount]=useState(0);
   async function login() {
     let code = localStorage.getItem('oauth-token')
