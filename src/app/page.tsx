@@ -1,15 +1,14 @@
 "use client"
-import { useEffect, useRef, useState } from "react";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import { permanentRedirect, useRouter } from 'next/navigation'
+import { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation'
 
 import axios from 'axios'
-import { comma } from "postcss/lib/list";
 export default function Home() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [apikey,setapikey]=useState(""); 
   const [error,seterror]= useState(false);
+  const [googleautho,setgoogleauth]=useState(false);
 
   useEffect(()=>{
 
@@ -28,22 +27,26 @@ export default function Home() {
   const googleauth= async()=>{
     const response = await axios.get('http://localhost:3000/api/v1/emailclassifier/getemails');
     window.location.assign(response.data);
-
   }
-
-  const onFormSubmit=async ()=>{
-    let code = window.location.href;
-      let url = new URL(code);
-      let queryParams = url.searchParams.get('code'); // This removes the leading "?"
-      console.log(queryParams)
-      if (queryParams) {
+useEffect(()=>{
+  localStorage.removeItem('auth');
+  let code = window.location.href;
+  let url = new URL(code);
+  let queryParams = url.searchParams.get('code'); 
+  if(queryParams){
+    localStorage.setItem('aut',queryParams);
+    setgoogleauth(true);
+  }
+})
+  const onFormSubmit=async ()=>{ 
+      if (localStorage.getItem('aut')) {
         try{
-          const resp = await axios.get(`http://localhost:3000/api/v1/emailclassifier/newoauthcallbacknew?code=${queryParams}`,
+          const resp = await axios.get(`http://localhost:3000/api/v1/emailclassifier/newoauthcallbacknew?code=${localStorage.getItem('aut')}`,
             { withCredentials: true });
           localStorage.setItem('username',resp.data.name)
           localStorage.setItem('userpic',resp.data.picture)
-          // initalized.current=true
-          setIsLoggedIn(true);
+         
+
         }catch(err){
           console.log(err)
         }
@@ -55,13 +58,16 @@ export default function Home() {
       }catch{
         seterror(true);
       }
+      if(!error){
+        setIsLoggedIn(true)
+      }
       setapikey("") ;
     };
   
 
   return (
     <div className="flex flex-col justify-center items-center min-h-screen font-mono">
-      {!isLoggedIn ? (
+      {!googleautho ? (
         <button className=" p-5 border-4 border-gray-50 rounded-lg mb-4 hover:bg-white hover:text-slate-950 " onClick={googleauth}>Login with your Google account</button>
       ) : <button className=" p-5 border-4 border-gray-50 rounded-lg mb-4 hover:bg-white hover:text-slate-950 ">Logged In successfully</button>
     }
