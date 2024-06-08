@@ -1,21 +1,26 @@
 'use client'
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import OpenAI from 'openai';
-
+import { Completions } from "openai/resources/completions.mjs";
+import Emailbox from '../Components/Emailbox'
 // Define the interface for email data
-interface Emaildt {
-    label: string[];
-    subject: string;
-    body: string;
-}
+
 
 export default function Emailclass() {
+    interface Emaildt {
+        from:string,
+        to:string,
+        label: string[];
+        subject: string;
+        body: string;
+    }
     const [count, setCount] = useState(false);
     const [selectedValue, setSelectedValue] = useState(10);
     const [emailalldata, setEmailalldata] = useState<Emaildt[]>([]);
     const [classifieddata, setClassifieddata] = useState<string[]>([]);
     const [openai, setOpenai] = useState<any>(null);
+    const [displaymail,setdisplaymail]=useState(false); 
 
     // Handle dropdown change
     const handleDropdownChange = (e: any) => {
@@ -52,6 +57,8 @@ export default function Emailclass() {
                 const label = dt.labels;
                 const subject = dt.subject;
                 const bodyenc = dt.body;
+                const from = dt.from;
+                const to  = dt.to;
                 const bodydec = Buffer.from(bodyenc, 'base64').toString('utf-8');
                 const completion: any = await openai.completions.create({
                     model: 'gpt-3.5-turbo-instruct',
@@ -61,7 +68,7 @@ export default function Emailclass() {
                     temperature: 0.8,
                 });
 
-                emailData.push({ label, subject, body: bodydec });
+                emailData.push({ from,to,label, subject, body: bodydec});
                 classifiedArr.push(completion.choices[0].text.trim());
             }));
 
@@ -71,11 +78,43 @@ export default function Emailclass() {
             console.error('Error fetching emails:', error);
         }
     };
+    const formatEmailBody = (body:string) => {
+        const lines = body.split('\n');
+        return openai.completions.create({
+            model: 'gpt-3.5-turbo-instruct',
+            prompt: `Remove all the links and print the content exactly "${lines}"`,
+            max_tokens: 6,
+            temperature: 0.8,
+        }).then((completion:any) => {
+            return completion.choices[0].text.trim();
+        }).catch((error:any) => {
+            console.error('Error:', error);
+            // Handle the error appropriately
+        });
+    };
+    function removeLinks(body: string) {
+        // Split the body into lines
+  const lines = body.split('\n');
+  
+  // Map over each line and remove links
+  const cleanedLines = lines.map((line) => {
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      // Replace all URLs with an empty string
+      return line.replace(urlRegex, '');
+  });
+
+  // Join the cleaned lines back together into a single string
+  return cleanedLines.join('\n');
+  }
+//   function displaymails=()=>{
+
+//   }
+    
     return (
         <div>
             <div className="flex items-center p-2 space-x-4">
-            <img className='rounded-full' src={localStorage.getItem('userpic')||''} alt="image of user"/>
-            <h1 className="font-mono text-xl">{localStorage.getItem('username')}</h1>
+            <img className='rounded-full' src={localStorage.getItem('userpic')!=undefined?localStorage.getItem('userpic')||'':''} alt="image of user"/>
+            <h1 className="font-mono text-xl">{localStorage.getItem('username')||''}</h1>
             </div>
             <div className="flex justify-between items-center">
             <div className=" w-60 border-4 rounded-xl m-6">
@@ -94,10 +133,12 @@ export default function Emailclass() {
             </div>
            
         
-            <div>
+            <div className="flex flex-col justify-center items-center " >
                 {classifieddata.map((category: string, index: number) => (
-                    <div key={index}>
-                        {category}
+                     <div onClick={()=>{
+                        setdisplaymail(true)
+                     }} className="border-2 m-5 p-12 w-1/2 border-white rounded-xl flex justify-between hover:bg-white hover:text-black">
+                    <Emailbox from={emailalldata[index]?.from} body={emailalldata[index]?.body} subject={emailalldata[index]?.subject} classified={category}/>
                     </div>
                 ))}
             </div>
