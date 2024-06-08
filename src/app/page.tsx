@@ -9,9 +9,7 @@ export default function Home() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [apikey,setapikey]=useState(""); 
-  const [apikeyloggedin,setapikeyloggedin]=useState(false);
-  const initalized = useRef(false);
-  
+  const [error,seterror]= useState(false);
 
   useEffect(()=>{
 
@@ -50,9 +48,13 @@ export default function Home() {
           console.log(err)
         }
       } else {
-        console.log("not yet")
+        seterror(true);
       }
-      localStorage.setItem("openaikey", apikey); 
+      
+      try{localStorage.setItem("openaikey", apikey); 
+      }catch{
+        seterror(true);
+      }
       setapikey("") ;
     };
   

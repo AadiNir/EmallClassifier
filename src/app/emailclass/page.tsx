@@ -73,17 +73,26 @@ export default function Emailclass() {
     };
     return (
         <div>
-            <img src={localStorage.getItem('userpic')||''} alt="image of user"/>
-            <h1>{localStorage.getItem('username')}</h1>
-            <label className="m-2" htmlFor="valueSelect">No of Emails</label>
-            <select id="valueSelect" value={selectedValue} onChange={handleDropdownChange} className="border border-gray-300 p-2 bg-black rounded m-4">
-                {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((value) => (
-                    <option key={value} value={value}>
-                        {value}
-                    </option>
-                ))}
-            </select>
-                <button onClick={fetchmails}>Get me the email</button>
+            <div className="flex items-center p-2 space-x-4">
+            <img className='rounded-full' src={localStorage.getItem('userpic')||''} alt="image of user"/>
+            <h1 className="font-mono text-xl">{localStorage.getItem('username')}</h1>
+            </div>
+            <div className="flex justify-between items-center">
+            <div className=" w-60 border-4 rounded-xl m-6">
+                <label className="m-2" htmlFor="valueSelect">No of Emails</label>
+                <select id="valueSelect" value={selectedValue} onChange={handleDropdownChange} className="border border-gray-300 p-2 bg-black rounded m-4">
+                    {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((value) => (
+                        <option key={value} value={value}>
+                            {value}
+                        </option>
+                    ))}
+                </select>
+                </div>
+                <div className="p-4 border-4 border-slate-50 m-6 rounded-lg hover:bg-white hover:text-black">
+                <button onClick={fetchmails}>Classify Emails</button>
+                </div>
+            </div>
+           
         
             <div>
                 {classifieddata.map((category: string, index: number) => (
