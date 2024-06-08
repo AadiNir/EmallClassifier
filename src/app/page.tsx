@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { permanentRedirect, useRouter } from 'next/navigation'
 
@@ -9,38 +9,18 @@ export default function Home() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [apikey,setapikey]=useState(""); 
-  useEffect(() => {
-    const fetchData = async () => {
-      let code = window.location.href;
-      let url = new URL(code);
-      let queryParams = url.searchParams.get('code'); // This removes the leading "?"
-      if (queryParams) {
-        try {
-          const resp = await axios.get(`http://localhost:3000/api/v1/emailclassifier/newoauthcallbacknew?code=${queryParams}`);
-          localStorage.setItem('username',resp.data.name)
-          localStorage.setItem('userpic',resp.data.picture)
-          setIsLoggedIn(true);
-        } catch (error) {
-          // Handle error if request fails
-          console.log('error mf')
-          console.error('Error fetching data:', error);
-        }
-      } else {
-      }
-    };
-  
-    fetchData();
-  }, []); // Empty dependency array means this effect runs only once, after the initial render
+  const [apikeyloggedin,setapikeyloggedin]=useState(false);
+  const initalized = useRef(false);
   
 
   useEffect(()=>{
 
-    if(isLoggedIn && localStorage.getItem("openaikey")){
+    if(isLoggedIn){
       router.push('/emailclass')
     }else{
       console.log("please enter openai api key")
     }
-  },[isLoggedIn,apikey])
+  },[isLoggedIn])
 
   // const handleLoginSuccess = (credentialResponse:any) => {
   //   setIsLoggedIn(true);
@@ -52,6 +32,30 @@ export default function Home() {
     window.location.assign(response.data);
 
   }
+
+  const onFormSubmit=async ()=>{
+    let code = window.location.href;
+      let url = new URL(code);
+      let queryParams = url.searchParams.get('code'); // This removes the leading "?"
+      console.log(queryParams)
+      if (queryParams) {
+        try{
+          const resp = await axios.get(`http://localhost:3000/api/v1/emailclassifier/newoauthcallbacknew?code=${queryParams}`,
+            { withCredentials: true });
+          localStorage.setItem('username',resp.data.name)
+          localStorage.setItem('userpic',resp.data.picture)
+          // initalized.current=true
+          setIsLoggedIn(true);
+        }catch(err){
+          console.log(err)
+        }
+      } else {
+        console.log("not yet")
+      }
+      localStorage.setItem("openaikey", apikey); 
+      setapikey("") ;
+    };
+  
 
   return (
     <div className="flex flex-col justify-center items-center min-h-screen font-mono">
@@ -68,7 +72,7 @@ export default function Home() {
       />
       <button 
         className=" bg-black text-white p-2 rounded w-36 hover:bg-white hover:text-slate-950 border-4 border-gray-50 m-3"
-        onClick={()=>{localStorage.setItem("openaikey", apikey); setapikey("")}}
+        onClick={onFormSubmit}
       >
         Log In
       </button>
